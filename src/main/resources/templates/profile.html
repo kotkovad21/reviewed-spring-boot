@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -99,12 +99,12 @@
                 
                 <div class="bio">
                     <h3>Profile caption:</h3>
-                    <h4>Alea iacta est</h4>
+                    <h4 th:text="${uzivatel?.popisProfilu}">Alea iacta est</h4>
                 </div>
 
                 <div class="name">
-                    <h2 class="first-name">Jane</h2>
-                    <h2 class="last-name">Doe</h2>
+                    <h2 class="first-name" th:text="${uzivatel?.krestniJmeno}">Jane</h2>
+                    <h2 class="last-name" th:text="${uzivatel?.prijmeni}">Doe</h2>
                 </div> 
             </div> 
         </section>
@@ -112,13 +112,13 @@
         <section class="private-info">
             <div class="info-grid">
                 <p class="label">Email:</p>
-                <p class="data">example@gmail.com</p>
+                <p class="data" th:text="${uzivatel?.email}">example@gmail.com</p>
                 <p class="label">Phone number:</p>
                 <p class="data">+420 724 678 592</p>
                 <p class="label">Country:</p>
                 <p class="data">Czech republic</p>
                 <p class="label">City:</p>
-                <p class="data">Prague</p>
+                <p class="data" th:text="${uzivatel?.mesto?.nazev}">Prague</p>
                 <p class="label">Profile status:</p>
                 <p class="data">Private</p>
              </div>

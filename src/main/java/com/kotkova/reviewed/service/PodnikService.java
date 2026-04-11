@@ -20,4 +20,14 @@ public class PodnikService {
     public List<Podnik> ziskejVsechnyPodniky() {
         return podnikRepository.findAll();
     }
+
+    // Tuto metodu použijeme teď na Homepage
+    public List<Podnik> ziskejNejnovejsiPodniky() {
+        return podnikRepository.findTop3ByOrderByIdPodnikuDesc();
+    }
+    public Podnik ziskejPodnikPodleId(Long id) {
+        // findById vrátí "Optional", proto použijeme .orElse(null),
+        // aby aplikace nespadla, když podnik s daným ID neexistuje
+        return podnikRepository.findById(id).orElse(null);
+    }
 }

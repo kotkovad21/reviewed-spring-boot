@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Istok+Web:ital,wght@0,400;0,700;1,400;1,700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Roboto+Flex:opsz,wght@8..144,100..1000&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    
+
     <title>Reviewed</title>
 </head>
 <body>
@@ -92,8 +92,8 @@
         </div>
     </header>
    <main>
-    <article class="review-card">     
-        
+    <article class="review-card">
+
         <div class="top-row">
              <div class="icons">
                 <button class="settings">
@@ -109,46 +109,51 @@
                 </div>
             </div>
             <div class="heading-column">
-                <h1 class="name">Bar Xyz</h1>
-            
+                <h1 class="name">
+                    <a
+                        th:href="@{/place/{id}(id=${recenze.podnik?.idPodniku})}"
+                        th:text="${recenze.podnik?.nazev}">Bar Xyz
+                    </a>
+                </h1>
+
                 <div class="meta-row">
                     <span class="label">Type:</span>
-                    <span class="value">Bar</span>
+                    <span class="value" th:text="${recenze.podnik?.typPodniku?.nazev}">Bar</span>
                 </div>
             </div>
-            
+
             <div class="dates">
                 <div class="meta-row">
                     <span class="label">Posted:</span>
-                    <span class="value">28.1.2026</span>
+                    <span class="value" th:text="${#temporals.format(recenze.obsah?.datumVytvoreni, 'dd. MM. yyyy')}">28.1.2026</span>
                 </div>
-
                 <div class="meta-row">
                     <span class="label">Visited:</span>
-                    <span class="value">24.1.2026</span>
+                    <span class="value" th:text="${#temporals.format(recenze.datumNavstevy, 'dd. MM. yyyy')}">24.1.2026</span>
                 </div>
             </div>
 
         </div>
-        
+
         <div class="second-row">
             <div class="rating">
-                <span class="material-symbols-outlined">star</span>
-                <span class="material-symbols-outlined">star</span>
-                <span class="material-symbols-outlined">star</span>
-                <span class="material-symbols-outlined">star</span>
-                <span class="material-symbols-outlined">star</span>
+                <th:block th:each="i : ${#numbers.sequence(1, 5)}">
+                    <span class="material-symbols-outlined"
+                          th:classappend="${i <= recenze.hodnoceni} ? 'filled' : ''">
+                        star
+                    </span>
+                </th:block>
             </div>
 
             <div class="author-row">
                 <span class="label">By:</span>
-                <span class="author">Jane Doe</span>
+                <span class="author" th:text="${recenze.obsah?.uzivatel?.prezdivka}">Jane Doe</span>
             </div>
 
         </div>
         <div class="main-content">
             <div class="text-column">
-                <q class="text">
+                <q class="text" th:text="${recenze.obsah?.text}">
                     <span>
                     The energy here is unmatched! We had a fantastic time sampling their cocktail menu. Even though we had to squeeze through the crowd to get to the bar, the service was top-notch and very attentive. It’s a bit expensive, but for a premium night out in the city, this is the place to be.
                     </span>
@@ -157,22 +162,18 @@
                 <div class="tags-section">
                     <span class="label">#:</span>
                     <ul class="tags">
-                        <li class="tag">Good Service</li>
-                        <li class="tag">Fun</li>
-                        <li class="tag">Nightlife</li>
-                        <li class="tag">Expensive</li>
-                        <li class="tag">Crowded</li>
+                        <li class="tag" th:each="s : ${recenze.obsah?.stitky}" th:text="${s.nazev}">Good Service</li>
                     </ul>
                 </div>
                 <div class="price-row">
                     <span class="label">Total spent:</span>
                     <div class="spend">
-                        <span>50</span>
+                        <span th:text="${recenze.utrata}">50</span>
                         <span>$</span>
                     </div>
                 </div>
             </div>
-            
+
             <div class="photo-column">
                 <div class="images">
                     <img class="image-small" src="../media/fotky/ambitious-studio-rick-barrett-QjUY7auDzUQ-unsplash.jpg" alt="Bar Xyz">
@@ -180,16 +181,16 @@
                     <img class="image-small" src="../media/fotky/drew-beamer-bTN-zKFy9uA-unsplash.jpg" alt="Bar Old Time">
                     <img class="image-small"src="../media/fotky/fred-moon-0yqa0rMCsYk-unsplash.jpg" alt="Pub Normal">
                 </div>
-                
+
             </div>
         </div>
-        
+
 
     </article>
 </main>
     <footer>
         <div class="footer-content">
-        
+
             <div class="logo-container">
                 <a href="homepage.html" class="logo">Reviewed</a>
             </div>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -94,7 +94,8 @@
     <main>
         <section class="place-card">
             <div class="heading">
-                <h1 class="name">Grand Cafe Prague</h1>
+                <h1 class="name" th:text="${podnik.nazev}">Grand Cafe Prague</h1>
+                <p class="category-tag" th:text="${podnik.typPodniku.nazev}">Kavárna</p>
                 <div class="rating">
                     <span class="material-symbols-outlined">star</span>
                     <span class="material-symbols-outlined">star</span>
@@ -102,7 +103,7 @@
                     <span class="material-symbols-outlined">star</span>
                     <span class="material-symbols-outlined">star</span>
                 </div>
-                <p class="bio">Luxurious cafe in the center of Prague</p>
+                <p class="bio" th:text="${podnik.popis}">Luxurious cafe in the center of Prague</p>
             </div>
 
             <div class="contact">
@@ -110,18 +111,14 @@
                     <span class="material-symbols-outlined">
                         call
                     </span>
-                    <p>
-                        +420 222 111 001
-                    </p>
+                    <p th:text="${podnik.telefon}">+420 222 111 001</p>
                 </div>
 
                 <div class="link">
                     <span class="material-symbols-outlined">
                         link_2
                     </span>
-                    <a class="url">
-                        www.grandcafepraha.cz
-                    </a>
+                    <a class="url" th:href="${podnik.urlWebu}" th:text="${podnik.urlWebu}">www.grandcafepraha.cz</a>
                 </div>
 
                 <div class="location">
@@ -131,13 +128,13 @@
 
                     <div class="address">
                         <div class="address-line">
-                            <p>Václavské náměstí</p>
-                            <p>812</p>
+                            <p th:text="${podnik.adresa.ulice}">Národní</p>
+                            <p th:text="${podnik.adresa.cisloPopisne}">11/22</p>,
                         </div>
                         
                         <div class="address-line">
-                            <p>Praha</p>
-                            <p>11000</p>
+                            <p th:text="${podnik.adresa.mesto.nazev}">Praha</p>
+                            <p th:text="${podnik.adresa.psc}">11000</p>
                         </div>
                     </div>
                 </div>
@@ -146,33 +143,15 @@
 
             <div class="opening">
                 <p>Open:</p>
-                <div class="open-line">
-                    <p>
-                        Mon-Fri: 
-                    </p>
-                    <p>
-                        08:00-21:00
-                    </p>
-                </div>
-                <div class="open-line">
-                    <p>
-                        Sat-Sun: 
-                    </p>
-                    <p>
-                        09:00-22:00
-                    </p>
-                </div>
+                <p th:text="${podnik.oteviraciDoba}"></p>
             </div>
             <section class="tags-section">
-                    <ul class="tags">
-                        <li class="tag">Good Service</li>
-                        <li class="tag">Luxury</li>
-                        <li class="tag">Quiet</li>
-                        <li class="tag">Expensive</li>
-                        <li class="tag">Beautiful</li>
-                        <li class="tag">Coffee</li>
-                    </ul>
-                </section>
+                <ul class="tags">
+                    <li class="tag" th:each="s : ${podnik.stitky}" th:text="${s.nazev}">
+                        Tag Name
+                    </li>
+                </ul>
+            </section>
 
             <section class="photo-section">
                 <h3 class="label">
@@ -211,17 +190,20 @@
             </section>
             <section class="reviews-section"> 
                 <h3 class="label">Reviews</h3>
-                <div class="reviews">
-                    <article class="card">
+                <div class="no-reviews" th:if="${#lists.isEmpty(podnik.recenze)}">
+                    <p>Zatím tu nejsou žádné recenze. Buďte první, kdo tento podnik ohodnotí!</p>
+                    <a href="/insert" class="btn-add-review">Add Review</a>
+                </div>
+                <div class="reviews" th:unless="${#lists.isEmpty(podnik.recenze)}">
+                    <article class="card" th:each="r : ${podnik.recenze}">
                         <div class="card-image-placeholder">
                             <img src="../media/fotky/kateryna-senkevych-N7qAgJjCMss-unsplash.jpg" alt="grand cafe" >
                         </div>
                         
                         <div class="card-content">
-                            <h3>Grand Cafe Prague</h3>
                             <div class="author-row">
                                 <p>By:</p>
-                                <h4>Joe Doe</h4>
+                                <h4 th:text="${r.obsah?.uzivatel?.prezdivka}">Joe Doe</h4>
                             </div>                        
                             <div class="rating-review">
                                 <span class="material-symbols-outlined">
@@ -241,141 +223,10 @@
                                 </span>
                             </div>
                             
-                            <a href="review.html" class="show-more">Show more</a>
-                        </div>
-                    </article>
-                    
-                    <article class="card">
-                        <div class="card-image-placeholder">
-                        </div>
-                    
-                        <div class="card-content">
-                            <h3>Grand Cafe Prague</h3>
-                            <div class="author-row">
-                                <p>By:</p>
-                                <h4>Joe Doe</h4>
-                            </div>                        
-                            <div class="rating-review">
-                                <span class="material-symbols-outlined">
-                                    star
-                                </span>
-                                <span class="material-symbols-outlined">
-                                    star
-                                </span>
-                                <span class="material-symbols-outlined">
-                                    star
-                                </span>
-                                <span class="material-symbols-outlined">
-                                    star
-                                </span>
-                                <span class="material-symbols-outlined">
-                                    star
-                                </span>
-                            </div>
-                            
-                            <a href="#" class="show-more">Show more</a>
+                            <a class="show-more" th:href="@{/review/{id}(id=${r.idObsahu})}">Show more</a>
                         </div>
                     </article>
 
-                    <article class="card">
-                        <div class="card-image-placeholder">
-                            <img src="../media/fotky/max-titov-n_oT5G2JAp4-unsplash.jpg" alt="grand cafe" >
-                        </div>
-                    
-                        <div class="card-content">
-                            <h3>Grand Cafe Prague</h3>
-                            <div class="author-row">
-                                <p>By:</p>
-                                <h4>Joe Doe</h4>
-                            </div>                        
-                            <div class="rating-review">
-                                <span class="material-symbols-outlined">
-                                    star
-                                </span>
-                                <span class="material-symbols-outlined">
-                                    star
-                                </span>
-                                <span class="material-symbols-outlined">
-                                    star
-                                </span>
-                                <span class="material-symbols-outlined">
-                                    star
-                                </span>
-                                <span class="material-symbols-outlined">
-                                    star
-                                </span>
-                            </div>
-                            
-                            <a href="#" class="show-more">Show more</a>
-                        </div>
-                    </article>
-
-                    <article class="card">
-                        <div class="card-image-placeholder">
-                            <img src="../media/fotky/domenico-adornato-ur0W7u3DWXQ-unsplash.jpg" alt="grand cafe" >
-                        </div>
-                        
-                        <div class="card-content">
-                            <h3>Grand Cafe Prague</h3>
-                            <div class="author-row">
-                                <p>By:</p>
-                                <h4>Joe Doe</h4>
-                            </div>                        
-                            <div class="rating-review">
-                                <span class="material-symbols-outlined">
-                                    star
-                                </span>
-                                <span class="material-symbols-outlined">
-                                    star
-                                </span>
-                                <span class="material-symbols-outlined">
-                                    star
-                                </span>
-                                <span class="material-symbols-outlined">
-                                    star
-                                </span>
-                                <span class="material-symbols-outlined">
-                                    star
-                                </span>
-                            </div>
-                            
-                            <a href="#" class="show-more">Show more</a>
-                        </div>
-                        
-                    </article>
-
-                    <article class="card">
-                        <div class="card-image-placeholder">
-                        </div>
-                    
-                        <div class="card-content">
-                            <h3>Grand Cafe Prague</h3>
-                            <div class="author-row">
-                                <p>By:</p>
-                                <h4>Joe Doe</h4>
-                            </div>                        
-                            <div class="rating-review">
-                                <span class="material-symbols-outlined">
-                                    star
-                                </span>
-                                <span class="material-symbols-outlined">
-                                    star
-                                </span>
-                                <span class="material-symbols-outlined">
-                                    star
-                                </span>
-                                <span class="material-symbols-outlined">
-                                    star
-                                </span>
-                                <span class="material-symbols-outlined">
-                                    star
-                                </span>
-                            </div>
-                            
-                            <a href="#" class="show-more">Show more</a>
-                        </div>
-                    </article>
-                    
                 </div>
             </section>
         </section>
