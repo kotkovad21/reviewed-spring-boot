@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/insert.css">
     <link rel="stylesheet" href="/footer.css">
     <script src="/nav.js" defer></script>
+    <script src="/Insert.js" defer></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -93,34 +94,34 @@
     </header>
     <main>
         <section class="insert">
-            <form action="#" method="POST" enctype="multipart/form-data">
+            <form th:action="@{/insert}" th:object="${novaRecenze}" method="POST" enctype="multipart/form-data">
                 <div class="form-grid">
                     <div>
-                        <label for="business">Select type of business</label>
-                        <select id="business" name="business">
-                            <option value="restaurant">Restaurant</option>
-                            <option value="coffee">Coffee Shop</option>
-                            <option value="bar">Bar</option>
+                        <label for="typPodnikuSelect">Select type of business</label>
+                        <select id="typPodnikuSelect">
+                            <option value="">-- Vyber typ --</option>
+                            <option th:each="t : ${typyPodniku}"
+                                    th:value="${t.idTypuPodniku}"
+                                    th:text="${t.nazev}"></option>
                         </select>
                     </div>
-
                     <div>
-                        <label for="name">Name</label>
-                        <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        placeholder="Name of the place you visited"
-                        required
-                        >
+                        <label for="podnikSelect">Name of the place</label>
+                        <select th:field="*{podnik}" id="podnikSelect">
+                            <option value="">-- Vyber podnik --</option>
+                            <option th:each="p : ${podniky}"
+                                    th:value="${p.idPodniku}"
+                                    th:text="${p.nazev}"
+                                    th:data-type="${p.typPodniku?.idTypuPodniku}"></option> </select>
                     </div>
 
                     <div>
-                        <label for="visit">When did you visit</label>
+                        <label for="visit" >When did you visit</label>
                         <input
                         type="date"
                         id="visit"
                         name="visit"
+                        th:field="*{datumNavstevy}"
                         >
                     </div>
 
@@ -133,17 +134,19 @@
                         name="amount"
                         placeholder="20"
                         min="0"
+                        th:field="*{utrata}"
                         >
                         </div>
-                        <p class="currency">$</p>
+                        <p class="currency">Kč</p>
                     </div>
 
                     <div>
-                        <label for="view">Who can see this review</label>
-                        <select id="view" name="view" >
-                            <option value="onlyMe">Only Me</option>
-                            <option value="myFriends">My friends</option>
-                            <option value="everyone">Everyone</option>
+                        <label for="viditelnostSelect">Visibility</label>
+                        <select th:field="*{obsah.viditelnost}" id="viditelnostSelect">
+                            <option value="">-- Vyber viditelnost --</option>
+                            <option th:each="v : ${viditelnosti}"
+                                    th:value="${v.idViditelnosti}"
+                                    th:text="${v.nazev}"></option>
                         </select>
                     </div>
 
@@ -163,7 +166,8 @@
                     id="review-text"
                     name="review-text"
                     placeholder="Share your thoughts"
-                    rows="5"    
+                    rows="5"
+                    th:field="*{obsah.text}"
                     >
                     </textarea>
                 </div>
@@ -171,62 +175,30 @@
                 
                 <fieldset class="star-rating">
                    <div class="stars">
-                        <input 
-                        type="radio" 
-                        id="star5" 
-                        name="rating" 
-                        value="5"
-                        >
-                        <label for="star5" title="5 stars">
-                            <span class="material-symbols-outlined">
-                                star
-                            </span>
-                        </label>
+                       <input type="radio" id="star5" th:field="*{hodnoceni}" value="5">
+                       <label for="star5" title="5 stars">
+                           <span class="material-symbols-outlined">star</span>
+                       </label>
 
-                        <input 
-                        type="radio" 
-                        id="star4" 
-                        name="rating" 
-                        value="4"
-                        >
-                        <label for="star4" title="4 stars">
-                            <span class="material-symbols-outlined">
-                                star
-                            </span>
-                        </label>
-                        <input 
-                        type="radio" 
-                        id="star3" 
-                        name="rating" 
-                        value="3"
-                        >
-                        <label for="star3" title="3 stars">
-                            <span class="material-symbols-outlined">
-                                star
-                            </span>
-                        </label>
-                        <input 
-                        type="radio" 
-                        id="star2" 
-                        name="rating" 
-                        value="2"
-                        >
-                        <label for="star2" title="2 stars">
-                            <span class="material-symbols-outlined">
-                                star
-                            </span>
-                        </label>
-                        <input 
-                        type="radio" 
-                        id="star1" 
-                        name="rating" 
-                        value="1"
-                        >
-                        <label for="star1" title="1 star">
-                            <span class="material-symbols-outlined">
-                                star
-                            </span>
-                        </label>
+                       <input type="radio" id="star4" th:field="*{hodnoceni}" value="4">
+                       <label for="star4" title="4 stars">
+                           <span class="material-symbols-outlined">star</span>
+                       </label>
+
+                       <input type="radio" id="star3" th:field="*{hodnoceni}" value="3">
+                       <label for="star3" title="3 stars">
+                           <span class="material-symbols-outlined">star</span>
+                       </label>
+
+                       <input type="radio" id="star2" th:field="*{hodnoceni}" value="2">
+                       <label for="star2" title="2 stars">
+                           <span class="material-symbols-outlined">star</span>
+                       </label>
+
+                       <input type="radio" id="star1" th:field="*{hodnoceni}" value="1">
+                       <label for="star1" title="1 stars">
+                           <span class="material-symbols-outlined">star</span>
+                       </label>
                     </div>
                 </fieldset>
                     

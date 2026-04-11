@@ -78,4 +78,6 @@ public class Podnik {
 
     public List<Recenze> getRecenze() { return recenze; }
     public void setRecenze(List<Recenze> recenze) { this.recenze = recenze; }
+
+
 }

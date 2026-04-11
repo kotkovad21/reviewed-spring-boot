@@ -2,15 +2,12 @@ package com.kotkova.reviewed.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "OBSAHY")
 public class Obsah {
-
-    @Id
-    @Column(name = "id_obsahu")
-    private Long idObsahu;
 
     // @Lob říká Springu, že v databázi je to velký text (CLOB)
     @Lob
@@ -30,7 +27,38 @@ public class Obsah {
             joinColumns = @JoinColumn(name = "id_obsahu"),
             inverseJoinColumns = @JoinColumn(name = "id_stitku")
     )
-    private List<Stitek> stitky;
+
+    @OneToOne(mappedBy = "obsah")
+    private Recenze recenze;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "obsah_gen")
+    @SequenceGenerator(name = "obsah_gen", sequenceName = "OBSAHY_ID_OBSAHU_SEQ", allocationSize = 1)
+    @Column(name = "id_obsahu")
+    private Long idObsahu;
+
+    @ManyToMany
+    @JoinTable(
+            name = "OBSAHY_STITKY", // název propojovací tabulky v DB
+            joinColumns = @JoinColumn(name = "id_obsahu"),
+            inverseJoinColumns = @JoinColumn(name = "id_stitku")
+    )
+    private List<Stitek> stitky = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "id_viditelnosti") // Sloupec v tabulce OBSAHY
+    private Viditelnost viditelnost;
+
+    @Column(name = "typ_obsahu")
+    private String typObsahu;
+
+    public void setTypObsahu(String typObsahu) {
+        this.typObsahu = typObsahu;
+    }
+
+    // Přidej Getter a Setter
+    public Viditelnost getViditelnost() { return viditelnost; }
+    public void setViditelnost(Viditelnost viditelnost) { this.viditelnost = viditelnost; }
 
     // Nezapomeň dolů přidat Getter a Setter!
     public List<Stitek> getStitky() { return stitky; }
@@ -47,4 +75,9 @@ public class Obsah {
 
     public LocalDate getDatumVytvoreni() { return datumVytvoreni; }
     public void setDatumVytvoreni(LocalDate datumVytvoreni) { this.datumVytvoreni = datumVytvoreni; }
+
+    public void setRecenze(Recenze recenze) {
+        this.recenze = recenze;
+    }
+
 }

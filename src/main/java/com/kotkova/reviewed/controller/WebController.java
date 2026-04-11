@@ -1,18 +1,24 @@
 package com.kotkova.reviewed.controller;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.*;
 import com.kotkova.reviewed.service.PodnikService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import org.springframework.web.bind.annotation.PathVariable;
 import com.kotkova.reviewed.model.Podnik;
 import com.kotkova.reviewed.service.RecenzeService; // Nezapomeň import
 import com.kotkova.reviewed.model.Recenze; // Nezapomeň import
 import com.kotkova.reviewed.model.Uzivatel;
 import com.kotkova.reviewed.service.UzivatelService;
+import com.kotkova.reviewed.model.TypPodniku;
+import com.kotkova.reviewed.service.TypPodnikuService;
+import com.kotkova.reviewed.model.Viditelnost;
+import com.kotkova.reviewed.service.ViditelnostService;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Controller
 public class WebController {
@@ -20,11 +26,16 @@ public class WebController {
     private final PodnikService podnikService;
     private final RecenzeService recenzeService;
     private final UzivatelService uzivatelService;
-    public WebController(PodnikService podnikService, RecenzeService recenzeService, UzivatelService uzivatelService) {
+    private final TypPodnikuService typPodnikuService;
+    private final ViditelnostService viditelnostService;
+
+    public WebController(PodnikService podnikService, RecenzeService recenzeService, UzivatelService uzivatelService, TypPodnikuService typPodnikuService, ViditelnostService viditelnostService) {
 
         this.podnikService = podnikService;
         this.recenzeService = recenzeService;
         this.uzivatelService = uzivatelService;
+        this.typPodnikuService = typPodnikuService;
+        this.viditelnostService = viditelnostService;
     }
 
     // Tato metoda zachytí požadavek, když půjdeš na hlavní stránku ("/")
@@ -46,10 +57,23 @@ public class WebController {
     }
 
     @GetMapping("/insert")
-    public String showInsertPage() {
+    public String showInsertForm(Model model) {
+        // 1. Načteme data ze všech služeb
+        List<Podnik> podniky = podnikService.ziskejVsechnyPodniky();
+        List<TypPodniku> typy = typPodnikuService.ziskejVsechnyTypy();
+        List<Viditelnost> viditelnosti = viditelnostService.ziskejVsechnyViditelnosti();
+
+        // 2. Kontrola v konzoli - uvidíš, jestli DB něco vrátila
+        System.out.println("Podniky: " + podniky.size() + ", Typy: " + typy.size() + ", Vidit: " + viditelnosti.size());
+
+        // 3. PŘIDÁNÍ DO MODELU (Názvy se musí shodovat s th:each v HTML)
+        model.addAttribute("podniky", podniky);
+        model.addAttribute("typyPodniku", typy);
+        model.addAttribute("viditelnosti", viditelnosti);
+
+        model.addAttribute("novaRecenze", new Recenze());
         return "insert";
     }
-
     @GetMapping("/profile")
     public String showProfilePage(Model model) {
         Uzivatel prihlasenyUzivatel = uzivatelService.ziskejUzivatelePodleId(3L);
@@ -100,4 +124,30 @@ public class WebController {
 
         // 4. Toto říká Springu: "Otevři soubor review.html"
         return "review"; }
+
+    @PostMapping("/insert")
+    public String processNewReview(@ModelAttribute("novaRecenze") Recenze recenze) {
+        try {
+            // 1. Nastavíme autora (ID 3)
+            Uzivatel autor = uzivatelService.ziskejUzivatelePodleId(3L);
+            recenze.getObsah().setUzivatel(autor);
+            recenze.getObsah().setDatumVytvoreni(LocalDate.now());
+
+            recenze.getObsah().setTypObsahu("RECENZE");
+            // 2. POJIŠTĚNÍ PRO VIDITELNOST (pokud select neposlal data)
+            if (recenze.getObsah().getViditelnost() == null) {
+                // Zkusíme najít první viditelnost v DB (obvykle ID 1 je 'Veřejné')
+                Viditelnost defaultViditelnost = viditelnostService.ziskejVsechnyViditelnosti().get(0);
+                recenze.getObsah().setViditelnost(defaultViditelnost);
+            }
+
+            recenze.getObsah().setRecenze(recenze);
+            recenzeService.ulozRecenzi(recenze);
+
+            return "redirect:/visits";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "insert";
+        }
+    }
 }
