@@ -16,6 +16,8 @@ import com.kotkova.reviewed.model.TypPodniku;
 import com.kotkova.reviewed.service.TypPodnikuService;
 import com.kotkova.reviewed.model.Viditelnost;
 import com.kotkova.reviewed.service.ViditelnostService;
+import com.kotkova.reviewed.model.Stitek;
+import com.kotkova.reviewed.service.StitekService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -28,14 +30,16 @@ public class WebController {
     private final UzivatelService uzivatelService;
     private final TypPodnikuService typPodnikuService;
     private final ViditelnostService viditelnostService;
+    private final StitekService stitekService;
 
-    public WebController(PodnikService podnikService, RecenzeService recenzeService, UzivatelService uzivatelService, TypPodnikuService typPodnikuService, ViditelnostService viditelnostService) {
+    public WebController(PodnikService podnikService, RecenzeService recenzeService, UzivatelService uzivatelService, TypPodnikuService typPodnikuService, ViditelnostService viditelnostService, StitekService stitekService) {
 
         this.podnikService = podnikService;
         this.recenzeService = recenzeService;
         this.uzivatelService = uzivatelService;
         this.typPodnikuService = typPodnikuService;
         this.viditelnostService = viditelnostService;
+        this.stitekService = stitekService;
     }
 
     // Tato metoda zachytí požadavek, když půjdeš na hlavní stránku ("/")
@@ -63,14 +67,10 @@ public class WebController {
         List<TypPodniku> typy = typPodnikuService.ziskejVsechnyTypy();
         List<Viditelnost> viditelnosti = viditelnostService.ziskejVsechnyViditelnosti();
 
-        // 2. Kontrola v konzoli - uvidíš, jestli DB něco vrátila
-        System.out.println("Podniky: " + podniky.size() + ", Typy: " + typy.size() + ", Vidit: " + viditelnosti.size());
-
-        // 3. PŘIDÁNÍ DO MODELU (Názvy se musí shodovat s th:each v HTML)
         model.addAttribute("podniky", podniky);
         model.addAttribute("typyPodniku", typy);
         model.addAttribute("viditelnosti", viditelnosti);
-
+        model.addAttribute("vsechnyStitky", stitekService.ziskejVsechnyStitky());
         model.addAttribute("novaRecenze", new Recenze());
         return "insert";
     }

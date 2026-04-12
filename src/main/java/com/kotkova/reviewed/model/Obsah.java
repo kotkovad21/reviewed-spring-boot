@@ -43,6 +43,7 @@ public class Obsah {
             joinColumns = @JoinColumn(name = "id_obsahu"),
             inverseJoinColumns = @JoinColumn(name = "id_stitku")
     )
+    @OrderColumn(name = "PORADI")
     private List<Stitek> stitky = new ArrayList<>();
 
     @ManyToOne
