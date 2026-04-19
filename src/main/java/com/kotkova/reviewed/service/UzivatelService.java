@@ -14,4 +14,9 @@ public class UzivatelService {
     public Uzivatel ziskejUzivatelePodleId(Long id) {
         return uzivatelRepository.findById(id).orElse(null);
     }
+
+    public Uzivatel ziskejUzivatelePodleEmailu(String email) {
+        return uzivatelRepository.findByEmail(email).orElse(null);
+    }
+
 }

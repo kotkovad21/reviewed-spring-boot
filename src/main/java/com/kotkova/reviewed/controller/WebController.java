@@ -71,9 +71,10 @@ public class WebController {
         return "insert";
     }
     @GetMapping("/profile")
-    public String showProfilePage(Model model) {
-        Uzivatel prihlasenyUzivatel = uzivatelService.ziskejUzivatelePodleId(3L);
+    public String showProfilePage(Model model, java.security.Principal principal) {
+        String email = principal.getName();
 
+        Uzivatel prihlasenyUzivatel = uzivatelService.ziskejUzivatelePodleEmailu(email);
         model.addAttribute("uzivatel", prihlasenyUzivatel);
 
         return "profile";
@@ -141,10 +142,12 @@ public class WebController {
     @PostMapping("/insert")
     public String processNewReview(
             @ModelAttribute("novaRecenze") Recenze recenze,
-            @RequestParam("fotkySoubory") MultipartFile[] soubory) { // <-- Přidáno pro příjem souborů
+            @RequestParam("fotkySoubory") MultipartFile[] soubory,
+                java.security.Principal principal){
         try {
             // 1. Nastavíme autora a základní info (tvoje stávající logika)
-            Uzivatel autor = uzivatelService.ziskejUzivatelePodleId(3L);
+            String email = principal.getName();
+            Uzivatel autor = uzivatelService.ziskejUzivatelePodleEmailu(email);
             recenze.getObsah().setUzivatel(autor);
             recenze.getObsah().setDatumVytvoreni(LocalDate.now());
             recenze.getObsah().setTypObsahu("RECENZE");
@@ -183,5 +186,10 @@ public class WebController {
             e.printStackTrace();
             return "insert";
         }
+    }
+    // PŘIDAT DO WebControlleru
+    @GetMapping("/login")
+    public String showLoginPage() {
+        return "login"; // Zobrazí templates/login.html
     }
 }

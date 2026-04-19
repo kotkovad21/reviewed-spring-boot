@@ -3,5 +3,9 @@ import com.kotkova.reviewed.model.Uzivatel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
-public interface UzivatelRepository extends JpaRepository<Uzivatel, Long> {}
+public interface UzivatelRepository extends JpaRepository<Uzivatel, Long> {
+    Optional<Uzivatel> findByEmail(String email);
+}

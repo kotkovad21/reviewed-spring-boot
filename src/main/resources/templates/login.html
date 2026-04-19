@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Reviewed</title>
+</head>
+<body>
+<div style="max-width: 400px; margin: 100px auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px;">
+    <h2>Přihlášení</h2>
+
+    <div th:if="${param.error}" style="color: red; margin-bottom: 15px;">
+        Špatný e-mail nebo heslo!
+    </div>
+
+    <div th:if="${param.logout}" style="color: green; margin-bottom: 15px;">
+        Úspěšně odhlášeno.
+    </div>
+
+    <form th:action="@{/login}" method="post">
+        <div style="margin-bottom: 15px;">
+            <label for="username">E-mail:</label><br>
+            <input type="text" id="username" name="username" required style="width: 100%;">
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label for="password">Heslo:</label><br>
+            <input type="password" id="password" name="password" required style="width: 100%;">
+        </div>
+
+        <button type="submit" style="width: 100%; padding: 10px; background-color: #000; color: #fff; cursor: pointer;">
+            Přihlásit se
+        </button>
+    </form>
+</div>
+</body>
+</html>
