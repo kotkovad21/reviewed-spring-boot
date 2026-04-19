@@ -24,3 +24,32 @@
             typeSelect.value = typeIdOfPodnik;
         }
     });
+
+function previewImages(event) {
+    const uploadArea = document.getElementById('upload-area');
+    const uploadText = document.getElementById('upload-text');
+    const files = event.target.files;
+
+    // Odstraníme staré fotky (vše kromě textu a inputu)
+    const oldImages = uploadArea.querySelectorAll('img');
+    oldImages.forEach(img => img.remove());
+
+    if (files && files.length > 0) {
+        if (uploadText) uploadText.style.display = 'none';
+
+        Array.from(files).forEach(file => {
+            if (!file.type.startsWith('image/')) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                // Už nepotřebujeme img.style.width atd., máme to v CSS!
+                uploadArea.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        });
+    } else {
+        if (uploadText) uploadText.style.display = 'block';
+    }
+}

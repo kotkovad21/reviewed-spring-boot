@@ -1,23 +1,14 @@
 package com.kotkova.reviewed.controller;
 
+import com.kotkova.reviewed.model.*;
+import com.kotkova.reviewed.service.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import com.kotkova.reviewed.service.PodnikService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import com.kotkova.reviewed.model.Podnik;
-import com.kotkova.reviewed.service.RecenzeService; // Nezapomeň import
-import com.kotkova.reviewed.model.Recenze; // Nezapomeň import
-import com.kotkova.reviewed.model.Uzivatel;
-import com.kotkova.reviewed.service.UzivatelService;
-import com.kotkova.reviewed.model.TypPodniku;
-import com.kotkova.reviewed.service.TypPodnikuService;
-import com.kotkova.reviewed.model.Viditelnost;
-import com.kotkova.reviewed.service.ViditelnostService;
-import com.kotkova.reviewed.model.Stitek;
-import com.kotkova.reviewed.service.StitekService;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -31,8 +22,9 @@ public class WebController {
     private final TypPodnikuService typPodnikuService;
     private final ViditelnostService viditelnostService;
     private final StitekService stitekService;
+    private final FotkaService fotkaService;
 
-    public WebController(PodnikService podnikService, RecenzeService recenzeService, UzivatelService uzivatelService, TypPodnikuService typPodnikuService, ViditelnostService viditelnostService, StitekService stitekService) {
+    public WebController(PodnikService podnikService, RecenzeService recenzeService, UzivatelService uzivatelService, TypPodnikuService typPodnikuService, ViditelnostService viditelnostService, StitekService stitekService, FotkaService fotkaService) {
 
         this.podnikService = podnikService;
         this.recenzeService = recenzeService;
@@ -40,6 +32,7 @@ public class WebController {
         this.typPodnikuService = typPodnikuService;
         this.viditelnostService = viditelnostService;
         this.stitekService = stitekService;
+        this.fotkaService = fotkaService;
     }
 
     // Tato metoda zachytí požadavek, když půjdeš na hlavní stránku ("/")
@@ -107,6 +100,8 @@ public class WebController {
         // 3. Pošleme nalezený objekt do HTML pod jménem "podnik"
         model.addAttribute("podnik", vybranyPodnik);
 
+        Double prumer = podnikService.ziskejPrumernyRating(id);
+        model.addAttribute("prumer", prumer != null ? prumer : 0.0);
         return "place";
     }
     @GetMapping("/review/{id}")
@@ -126,23 +121,40 @@ public class WebController {
         return "review"; }
 
     @PostMapping("/insert")
-    public String processNewReview(@ModelAttribute("novaRecenze") Recenze recenze) {
+    public String processNewReview(
+            @ModelAttribute("novaRecenze") Recenze recenze,
+            @RequestParam("fotkySoubory") MultipartFile[] soubory) { // <-- Přidáno pro příjem souborů
         try {
-            // 1. Nastavíme autora (ID 3)
+            // 1. Nastavíme autora a základní info (tvoje stávající logika)
             Uzivatel autor = uzivatelService.ziskejUzivatelePodleId(3L);
             recenze.getObsah().setUzivatel(autor);
             recenze.getObsah().setDatumVytvoreni(LocalDate.now());
-
             recenze.getObsah().setTypObsahu("RECENZE");
-            // 2. POJIŠTĚNÍ PRO VIDITELNOST (pokud select neposlal data)
+
             if (recenze.getObsah().getViditelnost() == null) {
-                // Zkusíme najít první viditelnost v DB (obvykle ID 1 je 'Veřejné')
                 Viditelnost defaultViditelnost = viditelnostService.ziskejVsechnyViditelnosti().get(0);
                 recenze.getObsah().setViditelnost(defaultViditelnost);
             }
 
             recenze.getObsah().setRecenze(recenze);
-            recenzeService.ulozRecenzi(recenze);
+
+            // 2. Uložíme recenzi (tím získáme ID_OBSAHU, které potřebujeme pro fotky)
+            Recenze ulozena = recenzeService.ulozRecenzi(recenze);
+
+            // 3. Zpracování nahraných fotek
+            if (soubory != null) {
+                for (MultipartFile soubor : soubory) {
+                    if (!soubor.isEmpty()) {
+                        Fotka novaFotka = new Fotka();
+                        novaFotka.setData(soubor.getBytes()); // Převede soubor na byte[] (BLOB)
+                        novaFotka.setIdRecenze(ulozena.getIdObsahu()); // Propojí fotku s recenzí
+
+                        novaFotka.setNazevSouboru(soubor.getOriginalFilename());
+                        // Uložíme fotku (předpokládám, že máš fotkaService nebo fotkaRepository)
+                        fotkaService.ulozFotku(novaFotka);
+                    }
+                }
+            }
 
             return "redirect:/visits";
         } catch (Exception e) {

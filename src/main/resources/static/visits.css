@@ -111,13 +111,28 @@ select {
   color: black;
 }
 
-.rating {
+/* 1. Základní nastavení pro všechny hvězdy (plné i prázdné) */
+.rating .material-symbols-outlined {
+    /* Všechny jsou v základu prázdné */
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    color: var(--darker-color); /* Tvoje původní tmavá barva */
+    font-size: 24px;
+    display: inline-block;
+}
+
+/* 2. Nastavení pouze pro ty vyplněné */
+.rating .material-symbols-outlined.filled {
+    /* Jen těmto zapneme výplň */
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24 !important;
+    /* Barva zůstává stejná jako u prázdných, nebo si ji uprav podle libosti */
+    color: var(--darker-color);
+}
+/* Kontejner (gap a margin zůstávají) */
+.card .rating {
   display: flex;
   gap: 4px;
   margin-bottom: 8px;
-  color: var(--darker-color);
 }
-
 .show-more {
   text-decoration: none;
   color: black;

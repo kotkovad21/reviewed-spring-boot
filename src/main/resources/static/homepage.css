@@ -226,15 +226,40 @@ body {
 .card:hover {
   transform: translateY(-2px);
 }
+/* Kontejner pro fotku */
+.card-image-placeholder {
+  width: 100%;
+  /* Výšku necháme na obrázku nebo placeholderu */
+}
 
 .card-image-placeholder img {
   width: 100%;
   height: 17rem;
-  display: block; /* Odstraní malou mezeru pod obrázkem, která vzniká u inline prvků */
+  display: block;
   border-radius: 4px;
   margin-bottom: 12px;
   object-fit: cover;
   border: 5px solid var(--darker-color);
+  box-sizing: border-box; /* EXTRÉMNĚ DŮLEŽITÉ - udrží border uvnitř rozměru */
+}
+
+/* Styl pro ten růžový čtverec s ikonou, když fotka chybí */
+.fallback-icon {
+  width: 100%;
+  height: 17rem;
+  background-color: #fce4ec;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  border: 5px solid var(--darker-color);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fallback-icon .material-symbols-outlined {
+  color: #f06292;
+  font-size: 3rem;
 }
 .card-content{
   display: flex;

@@ -13,7 +13,7 @@ body {
 /* Vytvoření vrstvy s obrázkem na pozadí*/
 .section-basic::after {
   content: "";
-  background-image: url(../media/fotky/Gemini_Generated_Image_rmn3awrmn3awrmn3.png);
+  background-image: url(/background_img.png);
   background-size: cover;
   background-position: center;
   position: absolute;

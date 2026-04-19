@@ -97,11 +97,12 @@
                 <h1 class="name" th:text="${podnik.nazev}">Grand Cafe Prague</h1>
                 <p class="category-tag" th:text="${podnik.typPodniku.nazev}">Kavárna</p>
                 <div class="rating">
-                    <span class="material-symbols-outlined">star</span>
-                    <span class="material-symbols-outlined">star</span>
-                    <span class="material-symbols-outlined">star</span>
-                    <span class="material-symbols-outlined">star</span>
-                    <span class="material-symbols-outlined">star</span>
+                    <th:block th:each="i : ${#numbers.sequence(1, 5)}">
+                        <span class="material-symbols-outlined"
+                              th:classappend="${i <= prumer} ? 'filled' : ''">
+                            star
+                        </span>
+                    </th:block>
                 </div>
                 <p class="bio" th:text="${podnik.popis}">Luxurious cafe in the center of Prague</p>
             </div>
@@ -158,34 +159,22 @@
                     Photos from people
                 </h3>
                 <div class="photos">
-                    <div class="photo">
-                        <img src="../media/fotky/kateryna-senkevych-N7qAgJjCMss-unsplash.jpg" alt="grand cafe" >
-                        <div class="author-row">
-                            <p>By:</p>
-                            <h4>Joe Doe</h4>
-                        </div> 
-                    </div>
-                    <div class="photo">
-                        <img src="../media/fotky/max-titov-n_oT5G2JAp4-unsplash.jpg" alt="grand cafe" >
-                        <div class="author-row">
-                            <p>By:</p>
-                            <h4>Joe Doe</h4>
-                        </div> 
-                    </div>
-                    <div class="photo">
-                        <img src="../media/fotky/domenico-adornato-ur0W7u3DWXQ-unsplash.jpg" alt="grand cafe" >
-                        <div class="author-row">
-                            <p>By:</p>
-                            <h4>Joe Doe</h4>
-                        </div>                         
-                    </div>
-                    <div class="photo">
-                        <img src="../media/fotky/aleksandar-andreev-mgdhoWfekZU-unsplash.jpg" alt="grand cafe" >
-                        <div class="author-row">
-                            <p>By:</p>
-                            <h4>Joe Doe</h4>
-                        </div> 
-                    </div>
+
+                    <th:block th:each="recenze : ${podnik.recenze}">
+
+                        <div class="photo" th:each="f : ${recenze.fotky}">
+
+                            <img th:src="@{/image/fotka/{id}(id=${f.idFotky})}" alt="Fotka z recenze">
+
+                            <div class="author-row">
+                                <p>By:</p>
+                                <h4 th:text="${recenze.obsah?.uzivatel?.prezdivka ?: 'Anonymní uživatel'}">Joe Doe</h4>
+                            </div>
+
+                        </div>
+
+                    </th:block>
+
                 </div>
             </section>
             <section class="reviews-section"> 
@@ -197,30 +186,32 @@
                 <div class="reviews" th:unless="${#lists.isEmpty(podnik.recenze)}">
                     <article class="card" th:each="r : ${podnik.recenze}">
                         <div class="card-image-placeholder">
-                            <img src="../media/fotky/kateryna-senkevych-N7qAgJjCMss-unsplash.jpg" alt="grand cafe" >
+
+                            <th:block th:if="${r.fotky != null and !r.fotky.isEmpty()}">
+                                <img th:src="@{/image/fotka/{id}(id=${r.fotky[0].idFotky})}"
+                                     alt="Náhled recenze"
+                                     style="width: 100%; height: 200px; object-fit: cover;">
+                            </th:block>
+
+                            <th:block th:if="${r.fotky == null or r.fotky.isEmpty()}">
+                                <div style="width: 100%; height: 200px; background: #eee; display: flex; align-items: center; justify-content: center;">
+                                    <span class="material-symbols-outlined" style="font-size: 48px; color: #ccc;">image</span>
+                                </div>
+                            </th:block>
                         </div>
                         
                         <div class="card-content">
                             <div class="author-row">
                                 <p>By:</p>
                                 <h4 th:text="${r.obsah?.uzivatel?.prezdivka}">Joe Doe</h4>
-                            </div>                        
+                            </div>
                             <div class="rating-review">
-                                <span class="material-symbols-outlined">
-                                    star
-                                </span>
-                                <span class="material-symbols-outlined">
-                                    star
-                                </span>
-                                <span class="material-symbols-outlined">
-                                    star
-                                </span>
-                                <span class="material-symbols-outlined">
-                                    star
-                                </span>
-                                <span class="material-symbols-outlined">
-                                    star
-                                </span>
+                                <th:block th:each="i : ${#numbers.sequence(1, 5)}">
+                                        <span class="material-symbols-outlined"
+                                              th:classappend="${i <= r.hodnoceni} ? 'filled' : ''">
+                                            star
+                                        </span>
+                                </th:block>
                             </div>
                             
                             <a class="show-more" th:href="@{/review/{id}(id=${r.idObsahu})}">Show more</a>
@@ -259,7 +250,7 @@
                 </ul>
             </div>
             <div>
-                <img src="../media/fotky/Gemini_Generated_Image_jsu2yejsu2yejsu2 (1).png" alt="food illustration">
+                <img src="/footer_img.png" alt="food illustration">
             </div>
         </div>
 

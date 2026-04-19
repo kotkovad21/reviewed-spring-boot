@@ -44,8 +44,18 @@ main {
   gap: 1rem;
   max-width: 30%;
 }
-.rating span{
+
+/* Základní vzhled pro všechny hvězdy (ikony) */
+.rating span {
   font-size: 3rem;
+  /* V základu jsou prázdné - FILL 0 */
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Pouze hvězdy s třídou .filled budou vyplněné */
+.rating span.filled {
+  /* Tady zapneme výplň - FILL 1 */
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24 !important;
 }
 .bio{
   font-size: 1.3rem;
@@ -281,12 +291,23 @@ opacity: 1;
   font-weight: 700;
   color: var(--dark-color);
 }
-.rating-review {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 8px;
-  color: var(--darker-color);
-  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+/* 1. Základní nastavení pro všechny hvězdy (plné i prázdné) */
+.rating-review .material-symbols-outlined {
+    /* Všechny jsou v základu prázdné */
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    color: var(--darker-color); /* Tvoje původní tmavá barva */
+      gap: 4px;
+      margin-bottom: 8px;
+    font-size: 24px;
+    display: inline-block;
+}
+
+/* 2. Nastavení pouze pro ty vyplněné */
+.rating-review .material-symbols-outlined.filled {
+    /* Jen těmto zapneme výplň */
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24 !important;
+    /* Barva zůstává stejná jako u prázdných, nebo si ji uprav podle libosti */
+    color: var(--darker-color);
 }
 .show-more {
   text-decoration: none;

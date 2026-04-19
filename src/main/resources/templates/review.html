@@ -162,7 +162,12 @@
                 <div class="tags-section">
                     <span class="label">#:</span>
                     <ul class="tags">
-                        <li class="tag" th:each="s : ${recenze.obsah?.stitky}" th:text="${s.nazev}">Good Service</li>
+                        <li class="tag"
+                            th:each="s : ${recenze.obsah?.stitky}"
+                            th:if="${s != null}"
+                            th:text="${s.nazev}">
+                            Good Service
+                        </li>
                     </ul>
                 </div>
                 <div class="price-row">
@@ -174,14 +179,15 @@
                 </div>
             </div>
 
-            <div class="photo-column">
+            <div class="photo-column" th:if="${recenze.fotky != null and !recenze.fotky.isEmpty()}">
                 <div class="images">
-                    <img class="image-small" src="../media/fotky/ambitious-studio-rick-barrett-QjUY7auDzUQ-unsplash.jpg" alt="Bar Xyz">
-                    <img class="image-small"src="../media/fotky/q-u-i-n-g-u-y-e-n-Zrp9b3PMIy8-unsplash.jpg" alt="Rich Bar">
-                    <img class="image-small" src="../media/fotky/drew-beamer-bTN-zKFy9uA-unsplash.jpg" alt="Bar Old Time">
-                    <img class="image-small"src="../media/fotky/fred-moon-0yqa0rMCsYk-unsplash.jpg" alt="Pub Normal">
-                </div>
 
+                    <img class="image-small"
+                         th:each="f : ${recenze.fotky}"
+                         th:src="@{/image/fotka/{id}(id=${f.idFotky})}"
+                         alt="Fotka z recenze">
+
+                </div>
             </div>
         </div>
 
@@ -216,7 +222,7 @@
                 </ul>
             </div>
             <div>
-                <img src="../media/fotky/Gemini_Generated_Image_jsu2yejsu2yejsu2 (1).png" alt="food illustration">
+                <img src="/footer_img.png" alt="food illustration">
             </div>
         </div>
 

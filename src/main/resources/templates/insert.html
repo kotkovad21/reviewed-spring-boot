@@ -207,16 +207,18 @@
                        </label>
                     </div>
                 </fieldset>
-                    
+
                 <div class="photo-upload-container">
                     <label for="photos">Photos</label>
-                    <div class="file-upload-area">
-                        <p>Drag here or choose from files</p>
+                    <div class="file-upload-area" id="upload-area">
+                        <p id="upload-text">Drag here or choose from files</p>
                         <input
-                        type="file"
-                        id="photos"
-                        name="photos"
-                        multiple accept="image/*"
+                                type="file"
+                                id="photos"
+                                name="fotkySoubory"
+                                multiple
+                                accept="image/*"
+                                onchange="previewImages(event)"
                         >
                     </div>
                 </div>
@@ -253,7 +255,8 @@
                 </ul>
             </div>
             <div>
-                <img src="../media/fotky/Gemini_Generated_Image_jsu2yejsu2yejsu2 (1).png" alt="food illustration">
+                <img src="/footer_img.png" alt="food illustration">
+
             </div>
         </div>
 

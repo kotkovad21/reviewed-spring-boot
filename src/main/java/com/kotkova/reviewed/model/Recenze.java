@@ -3,6 +3,7 @@ package com.kotkova.reviewed.model;
 import jakarta.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "RECENZE")
@@ -29,6 +30,14 @@ public class Recenze {
     @MapsId // Tato anotace je klíčová!
     @JoinColumn(name = "id_obsahu")
     private Obsah obsah = new Obsah();
+
+    @OneToMany
+    @JoinColumn(name = "id_recenze")
+    private List<Fotka> fotky;
+
+    // Přidej Getter pro fotky
+    public List<Fotka> getFotky() { return fotky; }
+
     // --- GETTERY A SETTERY ---
 
     public Long getIdObsahu() { return idObsahu; }

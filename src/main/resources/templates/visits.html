@@ -142,28 +142,33 @@
             <div class="cards-grid">
                 <article class="card" th:each="r : ${seznamRecenzi}">
                     <div class="card-image-placeholder">
-                        <img src="../media/fotky/ambitious-studio-rick-barrett-QjUY7auDzUQ-unsplash.jpg" alt="Bar Xyz">
+
+                        <div class="card-image-placeholder">
+
+                            <th:block th:if="${r.fotky != null and !r.fotky.isEmpty()}">
+                                <img th:src="@{/image/fotka/{id}(id=${r.fotky[0].idFotky})}"
+                                     alt="Náhled recenze"
+                                     style="width: 100%; height: 200px; object-fit: cover;">
+                            </th:block>
+
+                            <th:block th:if="${r.fotky == null or r.fotky.isEmpty()}">
+                                <div style="width: 100%; height: 200px; background: #eee; display: flex; align-items: center; justify-content: center;">
+                                    <span class="material-symbols-outlined" style="font-size: 48px; color: #ccc;">image</span>
+                                </div>
+                            </th:block>
+                        </div>
                     </div>
                         
                     <div class="card-content">
                         <h3 th:text="${r.podnik?.nazev}">Bar Xyz</h3>
-                            
+
                         <div class="rating">
-                            <span class="material-symbols-outlined">
-                                star
-                            </span>
-                            <span class="material-symbols-outlined">
-                                star
-                            </span>
-                            <span class="material-symbols-outlined">
-                                star
-                            </span>
-                            <span class="material-symbols-outlined">
-                                star
-                            </span>
-                            <span class="material-symbols-outlined">
-                                star
-                            </span>
+                            <th:block th:each="i : ${#numbers.sequence(1, 5)}">
+                                        <span class="material-symbols-outlined"
+                                              th:classappend="${i <= r.hodnoceni} ? 'filled' : ''">
+                                            star
+                                        </span>
+                            </th:block>
                         </div>
 
                         <a class="show-more" th:href="@{/review/{id}(id=${r.idObsahu})}">Show more</a>
@@ -202,7 +207,7 @@
                 </ul>
             </div>
             <div>
-                <img src="../media/fotky/Gemini_Generated_Image_jsu2yejsu2yejsu2 (1).png" alt="food illustration">
+                <img src="/footer_img.png" alt="food illustration">
             </div>
         </div>
 
