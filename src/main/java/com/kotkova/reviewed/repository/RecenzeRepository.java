@@ -10,4 +10,5 @@ import java.util.List;
 public interface RecenzeRepository extends JpaRepository<Recenze, Long> {
     List<Recenze> findTop6ByOrderByIdObsahuDesc();
     List<Recenze> findByPodnikIdPodniku(Long idPodniku);
+
 }

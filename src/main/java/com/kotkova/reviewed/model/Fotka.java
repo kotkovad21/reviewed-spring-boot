@@ -16,6 +16,7 @@ public class Fotka {
     private Long idRecenze; // Nebo vazba @ManyToOne na Recenzi, oboje funguje
 
     @Lob
+    @Basic(fetch = FetchType.LAZY)
     @Column(name = "FOTKA")
     private byte[] data; // Toto je ten BLOB
 

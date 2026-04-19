@@ -31,10 +31,21 @@ public class Recenze {
     @JoinColumn(name = "id_obsahu")
     private Obsah obsah = new Obsah();
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_recenze")
     private List<Fotka> fotky;
 
+    @Transient
+    private Long idTitulniFotky;
+
+    // Vygeneruj si k tomu Getter a Setter:
+    public Long getIdTitulniFotky() {
+        return idTitulniFotky;
+    }
+
+    public void setIdTitulniFotky(Long idTitulniFotky) {
+        this.idTitulniFotky = idTitulniFotky;
+    }
     // Přidej Getter pro fotky
     public List<Fotka> getFotky() { return fotky; }
 

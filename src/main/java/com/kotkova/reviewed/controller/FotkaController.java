@@ -2,11 +2,14 @@ package com.kotkova.reviewed.controller;
 
 import com.kotkova.reviewed.model.Fotka;
 import com.kotkova.reviewed.repository.FotkaRepository;
+import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+
+import java.util.concurrent.TimeUnit;
 
 @Controller
 public class FotkaController {
@@ -20,14 +23,13 @@ public class FotkaController {
     // Tento endpoint vrací obrázek místo HTML stránky
     @GetMapping("/image/fotka/{id}")
     public ResponseEntity<byte[]> ziskajObrazok(@PathVariable Long id) {
-        Fotka fotka = fotkaRepository.findById(id).orElse(null);
-
-        if (fotka != null && fotka.getData() != null) {
-            return ResponseEntity.ok()
-                    // Řekneme prohlížeči, že posíláme obrázek (JPEG/PNG)
-                    .contentType(MediaType.IMAGE_JPEG)
-                    .body(fotka.getData());
-        }
-        return ResponseEntity.notFound().build();
+        // Použijeme findById, abychom zbytečně nenačítali nic jiného
+        return fotkaRepository.findById(id)
+                .map(fotka -> ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_JPEG) // Pokud máš i PNG, Spring to většinou přechroustá
+                        // PŘIDÁNO: Kešování na 1 den (86400 sekund)
+                        .cacheControl(CacheControl.maxAge(1, TimeUnit.DAYS))
+                        .body(fotka.getData()))
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

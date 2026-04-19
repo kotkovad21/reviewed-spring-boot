@@ -49,6 +49,18 @@ public class Podnik {
     @OneToMany(mappedBy = "podnik")
     private List<Recenze> recenze;
 
+    @Transient
+    private Double prumernyRating;
+
+    @Transient
+    private Long idTitulniFotky;
+
+    public Double getPrumernyRating() { return prumernyRating; }
+    public void setPrumernyRating(Double prumernyRating) { this.prumernyRating = prumernyRating; }
+
+    public Long getIdTitulniFotky() { return idTitulniFotky; }
+    public void setIdTitulniFotky(Long idTitulniFotky) { this.idTitulniFotky = idTitulniFotky; }
+
     public Long getIdPodniku() { return idPodniku; }
     public void setIdPodniku(Long idPodniku) { this.idPodniku = idPodniku; }
 

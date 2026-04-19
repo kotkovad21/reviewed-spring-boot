@@ -122,7 +122,8 @@
                                 <th:block th:if="${r.fotky != null and !r.fotky.isEmpty()}">
                                     <img th:src="@{/image/fotka/{id}(id=${r.fotky[0].idFotky})}"
                                          alt="Náhled recenze"
-                                         style="width: 100%; height: 200px; object-fit: cover;">
+                                         style="width: 100%; height: 200px; object-fit: cover;"
+                                         loading="lazy">
                                 </th:block>
 
                                 <th:block th:if="${r.fotky == null or r.fotky.isEmpty()}">
@@ -169,13 +170,11 @@
                     <a class="popularcard" th:href="@{/place/{id}(id=${p.idPodniku})}">
 
                         <div class="card-image-placeholder">
-                            <th:block th:each="rec, recStat : ${p.recenze}">
-                                <th:block th:each="f, fStat : ${rec.fotky}" th:if="${recStat.first and fStat.first}">
-                                    <img th:src="@{/image/fotka/{id}(id=${f.idFotky})}" alt="Foto">
-                                </th:block>
+                            <th:block th:if="${p.idTitulniFotky != null}">
+                                <img th:src="@{/image/fotka/{id}(id=${p.idTitulniFotky})}" loading="lazy">
                             </th:block>
 
-                            <div class="fallback-icon" th:if="${p.recenze == null or #lists.isEmpty(p.recenze) or p.recenze[0].fotky == null or #lists.isEmpty(p.recenze[0].fotky)}">
+                            <div class="fallback-icon" th:if="${p.idTitulniFotky == null}">
                                 <span class="material-symbols-outlined">image</span>
                             </div>
                         </div>

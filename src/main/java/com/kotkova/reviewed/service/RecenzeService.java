@@ -1,7 +1,10 @@
 package com.kotkova.reviewed.service;
 
 import com.kotkova.reviewed.model.Recenze;
+import com.kotkova.reviewed.repository.FotkaRepository;
 import com.kotkova.reviewed.repository.RecenzeRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,10 +13,12 @@ import java.util.List;
 public class RecenzeService {
 
     private final RecenzeRepository recenzeRepository;
+    private final FotkaRepository fotkaRepository;
 
     // Vložení repozitáře (Dependency Injection)
-    public RecenzeService(RecenzeRepository recenzeRepository) {
+    public RecenzeService(RecenzeRepository recenzeRepository, FotkaRepository fotkaRepository) {
         this.recenzeRepository = recenzeRepository;
+        this.fotkaRepository = fotkaRepository;
     }
 
     // Tuto metodu použijeme, až budeme odesílat formulář s novou recenzí z HTML
@@ -32,6 +37,24 @@ public class RecenzeService {
 
     // A TUTO NOVOU PŘIDEJ PRO HOMEPAGE:
     public List<Recenze> ziskejSestNejnovejsichRecenzi() {
-        return recenzeRepository.findTop6ByOrderByIdObsahuDesc();
+        List<Recenze> seznam = recenzeRepository.findTop6ByOrderByIdObsahuDesc();
+        for (Recenze r : seznam) {
+            pripojIdTitulniFotky(r);
+        }
+        return seznam;
+    }
+    public Page<Recenze> ziskejStrankuRecenzi(Pageable pageable) {
+        Page<Recenze> stranka = recenzeRepository.findAll(pageable);
+        for (Recenze r : stranka.getContent()) {
+            pripojIdTitulniFotky(r);
+        }
+        return stranka;
+    }
+
+    private void pripojIdTitulniFotky(Recenze r) {
+        List<Long> ids = fotkaRepository.najdiIdFotekPodleRecenze(r.getIdObsahu());
+        if (!ids.isEmpty()) {
+            r.setIdTitulniFotky(ids.get(0));
+        }
     }
 }

@@ -2,6 +2,9 @@ package com.kotkova.reviewed.controller;
 
 import com.kotkova.reviewed.model.*;
 import com.kotkova.reviewed.service.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.stereotype.Controller;
@@ -77,14 +80,29 @@ public class WebController {
     }
     @GetMapping("/visits")
     public String showVisitsPage(Model model) {
-        // 1. Vytáhneme z databáze všechny recenze
-        // (V budoucnu, až budeme mít přihlašování, tady vytáhneme jen recenze konkrétního uživatele)
-        var vsechnyRecenze = recenzeService.ziskejVsechnyRecenze();
+
+        Pageable pageable = PageRequest.of(0, 12);
+        var prvniStranka = recenzeService.ziskejStrankuRecenzi(pageable);
 
         // 2. Pošleme je do HTML pod jménem "seznamRecenzi"
-        model.addAttribute("seznamRecenzi", vsechnyRecenze);
+        model.addAttribute("seznamRecenzi", prvniStranka.getContent());
 
         return "visits";
+    }
+
+    @GetMapping("/visits/load-more")
+    public String loadMore(@RequestParam(defaultValue = "0") int page, Model model) {
+        // 1. Připravíme si stránkování (velikost 12)
+        Pageable pageable = PageRequest.of(page, 12);
+
+        // 2. Místo repository voláme SERVICE (teď už to nebude svítit červeně)
+        Page<Recenze> recenzePage = recenzeService.ziskejStrankuRecenzi(pageable);
+
+        // 3. Pošleme data do modelu
+        model.addAttribute("seznamRecenzi", recenzePage.getContent());
+
+        // 4. Vrátíme fragment
+        return "fragments/visitsLoad :: visits-fragment";
     }
 
     @GetMapping("/place/{id}")
@@ -154,7 +172,7 @@ public class WebController {
 
                         String unikatniNazev = java.util.UUID.randomUUID().toString().substring(0, 20);
                         novaFotka.setNazevSouboru(unikatniNazev);
-                        
+
                         fotkaService.ulozFotku(novaFotka);
                     }
                 }

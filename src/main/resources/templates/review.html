@@ -185,7 +185,9 @@
                     <img class="image-small"
                          th:each="f : ${recenze.fotky}"
                          th:src="@{/image/fotka/{id}(id=${f.idFotky})}"
-                         alt="Fotka z recenze">
+                         alt="Fotka z recenze"
+                         loading="lazy"
+                    >
 
                 </div>
             </div>

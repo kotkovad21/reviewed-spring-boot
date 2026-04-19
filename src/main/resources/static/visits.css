@@ -66,13 +66,13 @@ select {
   padding: 0 0 5rem 0;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
+  flex-direction: column;
 }
 
 .cards-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
-  grid-template-rows: 1fr 1fr 1fr;
   gap: 2rem;
   max-width: 70vw;
 }
