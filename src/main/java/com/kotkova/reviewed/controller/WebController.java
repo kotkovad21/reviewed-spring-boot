@@ -151,6 +151,10 @@ public class WebController {
 
                         novaFotka.setNazevSouboru(soubor.getOriginalFilename());
                         // Uložíme fotku (předpokládám, že máš fotkaService nebo fotkaRepository)
+
+                        String unikatniNazev = java.util.UUID.randomUUID().toString().substring(0, 20);
+                        novaFotka.setNazevSouboru(unikatniNazev);
+                        
                         fotkaService.ulozFotku(novaFotka);
                     }
                 }
