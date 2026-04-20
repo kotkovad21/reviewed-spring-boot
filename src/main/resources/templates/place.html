@@ -160,7 +160,7 @@
                 </h3>
                 <div class="photos">
 
-                    <th:block th:each="recenze : ${podnik.recenze}">
+                    <th:block th:each="recenze : ${seznamRecenzi}">
 
                         <div class="photo" th:each="f : ${recenze.fotky}">
 
@@ -184,7 +184,7 @@
                     <a href="/insert" class="btn-add-review">Add Review</a>
                 </div>
                 <div class="reviews" th:unless="${#lists.isEmpty(podnik.recenze)}">
-                    <article class="card" th:each="r : ${podnik.recenze}">
+                    <article class="card" th:each="r : ${seznamRecenzi}">
                         <div class="card-image-placeholder">
 
                             <th:block th:if="${r.fotky != null and !r.fotky.isEmpty()}">

@@ -5,6 +5,8 @@ import com.kotkova.reviewed.service.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.stereotype.Controller;
@@ -38,17 +40,29 @@ public class WebController {
         this.fotkaService = fotkaService;
     }
 
-    // Tato metoda zachytí požadavek, když půjdeš na hlavní stránku ("/")
     @GetMapping("/")
-    public String showHomepage(Model model) {
-        // Vytáhneme podniky z Oracle
+    public String showHomepage(Model model, java.security.Principal principal) { // PŘIDÁNO: Principal
+        // 1. Podniky (tohle máš správně)
         var seznamPodniku = podnikService.ziskejNejnovejsiPodniky();
-
-        // Pošleme je do HTML pod jménem "podnikyZDatabaze"
         model.addAttribute("podnikyZDatabaze", seznamPodniku);
 
-        var seznamRecenzi = recenzeService.ziskejSestNejnovejsichRecenzi();
-        model.addAttribute("seznamRecenzi", seznamRecenzi);
+        // 2. Zjistíme, kdo je u počítače (idPrihlaseneho)
+        Long idPrihlaseneho = null;
+        if (principal != null) {
+            Uzivatel u = uzivatelService.ziskejUzivatelePodleEmailu(principal.getName());
+            if (u != null) idPrihlaseneho = u.getIdUzivatele();
+        }
+
+        // 3. TADY JE TA HLAVNÍ ZMĚNA:
+        // Místo té staré metody použijeme ziskejStrankuRecenzi s limitem 6
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, 6);
+
+        // Tato služba už v sobě má ten chytrý filtr, co jsme psali minule!
+        var stranka = recenzeService.ziskejStrankuRecenzi(pageable, idPrihlaseneho);
+
+        // Pošleme do HTML jen těch bezpečných 6 kousků
+        model.addAttribute("seznamRecenzi", stranka.getContent());
+
         return "homepage";
     }
     @GetMapping("/place")
@@ -80,10 +94,19 @@ public class WebController {
         return "profile";
     }
     @GetMapping("/visits")
-    public String showVisitsPage(Model model) {
+    public String showVisitsPage(Model model, java.security.Principal principal) {
 
         Pageable pageable = PageRequest.of(0, 12);
-        var prvniStranka = recenzeService.ziskejStrankuRecenzi(pageable);
+
+        Long idPrihlaseneho = null;
+        if (principal != null) {
+            Uzivatel u = uzivatelService.ziskejUzivatelePodleEmailu(principal.getName());
+            if (u != null) {
+                idPrihlaseneho = u.getIdUzivatele();
+            }
+        }
+
+        var prvniStranka = recenzeService.ziskejMojeRecenze(pageable, idPrihlaseneho);
 
         // 2. Pošleme je do HTML pod jménem "seznamRecenzi"
         model.addAttribute("seznamRecenzi", prvniStranka.getContent());
@@ -92,52 +115,78 @@ public class WebController {
     }
 
     @GetMapping("/visits/load-more")
-    public String loadMore(@RequestParam(defaultValue = "0") int page, Model model) {
-        // 1. Připravíme si stránkování (velikost 12)
+    public String loadMore(@RequestParam(defaultValue = "0") int page, Model model, java.security.Principal principal) {
+        // 1. Připravíme si stránkování
         Pageable pageable = PageRequest.of(page, 12);
 
-        // 2. Místo repository voláme SERVICE (teď už to nebude svítit červeně)
-        Page<Recenze> recenzePage = recenzeService.ziskejStrankuRecenzi(pageable);
+        // 2. Zjistíme ID přihlášeného uživatele (úplně stejně jako v /visits)
+        Long idPrihlaseneho = null;
+        if (principal != null) {
+            Uzivatel u = uzivatelService.ziskejUzivatelePodleEmailu(principal.getName());
+            if (u != null) {
+                idPrihlaseneho = u.getIdUzivatele();
+            }
+        }
 
-        // 3. Pošleme data do modelu
+        // 3. ZAVOLÁME SLUŽBU SE DVĚMA PARAMETRY (tady byla ta chyba)
+        Page<Recenze> recenzePage = recenzeService.ziskejMojeRecenze(pageable, idPrihlaseneho);
+
+        // 4. Pošleme data do modelu a vrátíme fragment
         model.addAttribute("seznamRecenzi", recenzePage.getContent());
 
-        // 4. Vrátíme fragment
         return "fragments/visitsLoad :: visits-fragment";
     }
 
     @GetMapping("/place/{id}")
-    public String zobrazDetailPodniku(@PathVariable Long id, Model model) {
+    public String zobrazDetailPodniku(@PathVariable Long id, Model model, java.security.Principal principal) {
         // 1. Najdeme podnik v DB
         Podnik vybranyPodnik = podnikService.ziskejPodnikPodleId(id);
-
-        // 2. Pokud neexistuje, pošleme uživatele zpět na homepage
-        if (vybranyPodnik == null) {
-            return "redirect:/";
-        }
-
-        // 3. Pošleme nalezený objekt do HTML pod jménem "podnik"
         model.addAttribute("podnik", vybranyPodnik);
 
+        // 2. Zjistíme ID přihlášeného uživatele (pokud je někdo přihlášen)
+        Long idPrihlaseneho = null;
+        if (principal != null) {
+            Uzivatel u = uzivatelService.ziskejUzivatelePodleEmailu(principal.getName());
+            if (u != null) {
+                idPrihlaseneho = u.getIdUzivatele();
+            }
+        }
+
+        // 3. Získáme profiltrované recenze konkrétního podniku (veřejné + přátelé + moje)
+        // Tato metoda v RecenzeService zajistí, že nikdo neuvidí, co nemá
+        List<Recenze> recenzeKPodniku = recenzeService.ziskejViditelneRecenzeProPodnik(id, idPrihlaseneho);
+        model.addAttribute("seznamRecenzi", recenzeKPodniku);
+
+        // 4. Průměrné hodnocení
         Double prumer = podnikService.ziskejPrumernyRating(id);
         model.addAttribute("prumer", prumer != null ? prumer : 0.0);
+
         return "place";
     }
     @GetMapping("/review/{id}")
-    public String showReviewPage(@PathVariable Long id, Model model) {
-        // 1. Najdeme konkrétní recenzi v databázi
+    public String showReviewPage(@PathVariable Long id, Model model, java.security.Principal principal) {
+        // 1. Najdeme konkrétní recenzi v databázi (to už máš)
         Recenze vybranaRecenze = recenzeService.ziskejRecenziPodleId(id);
-
-        // 2. Pokud někdo zadal vymyšlené ID, pošleme ho domů
-        if (vybranaRecenze == null) {
-            return "redirect:/";
-        }
-
-        // 3. Pošleme recenzi do HTML pod jménem "recenze"
         model.addAttribute("recenze", vybranaRecenze);
 
-        // 4. Toto říká Springu: "Otevři soubor review.html"
-        return "review"; }
+        // 2. Zjistíme ID přihlášeného uživatele
+        // Proměnnou si připravíme nahoře, aby byla viditelná pro model.addAttribute níže
+        Long prihlasenyId = null;
+
+        if (principal != null) {
+            Uzivatel u = uzivatelService.ziskejUzivatelePodleEmailu(principal.getName());
+            if (u != null) {
+                prihlasenyId = u.getIdUzivatele();
+            }
+        }
+
+        // 3. Pošleme ID do HTML pod jménem "prihlasenyId"
+        // Teď už proměnná 'u' nesvítí červeně, protože používáme 'prihlasenyId'
+        model.addAttribute("prihlasenyId", prihlasenyId);
+
+        // 4. Otevřeme soubor review.html
+        return "review";
+    }
 
     @PostMapping("/insert")
     public String processNewReview(
@@ -192,4 +241,23 @@ public class WebController {
     public String showLoginPage() {
         return "login"; // Zobrazí templates/login.html
     }
+
+    @PostMapping("/review/{id}/delete")
+    @ResponseBody // Říkáme, že nevracíme HTML stránku, ale jen potvrzení (OK)
+    public ResponseEntity<String> smazatRecenzi(@PathVariable Long id, java.security.Principal principal) {
+        // 1. Získáme přihlášeného uživatele
+        Uzivatel prihlaseny = uzivatelService.ziskejUzivatelePodleEmailu(principal.getName());
+
+        // 2. Najdeme recenzi
+        Recenze r = recenzeService.ziskejRecenziPodleId(id);
+
+        // 3. BEZPEČNOSTNÍ KONTROLA: Patří ta recenze jemu?
+        if (r.getObsah().getUzivatel().getIdUzivatele().equals(prihlaseny.getIdUzivatele())) {
+            recenzeService.oznacJakoSmazanou(id);
+            return ResponseEntity.ok("Smazáno");
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Nemáte oprávnění");
+        }
+    }
+
 }

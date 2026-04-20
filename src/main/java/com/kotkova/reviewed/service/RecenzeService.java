@@ -1,6 +1,7 @@
 package com.kotkova.reviewed.service;
 
 import com.kotkova.reviewed.model.Recenze;
+import com.kotkova.reviewed.model.Viditelnost;
 import com.kotkova.reviewed.repository.FotkaRepository;
 import com.kotkova.reviewed.repository.RecenzeRepository;
 import org.springframework.data.domain.Page;
@@ -43,18 +44,78 @@ public class RecenzeService {
         }
         return seznam;
     }
-    public Page<Recenze> ziskejStrankuRecenzi(Pageable pageable) {
-        Page<Recenze> stranka = recenzeRepository.findAll(pageable);
+    public Page<Recenze> ziskejStrankuRecenzi(Pageable pageable, Long idPrihlasenehoUzivatele) {
+        Page<Recenze> stranka;
+
+        if (idPrihlasenehoUzivatele != null) {
+            // Zapínáme chytrý filtr pro přihlášeného!
+            stranka = recenzeRepository.najdiViditelneRecenze(idPrihlasenehoUzivatele, pageable);
+        } else {
+            // Vidí jen veřejné a anonymní věci
+            stranka = recenzeRepository.najdiVerejneRecenze(pageable);
+        }
         for (Recenze r : stranka.getContent()) {
             pripojIdTitulniFotky(r);
         }
         return stranka;
     }
 
+    public List<Recenze> ziskejViditelneRecenzeProPodnik(Long idPodniku, Long idPrihlasenehoUzivatele) {
+        List<Recenze> recenze;
+
+        if (idPrihlasenehoUzivatele != null) {
+            // Přihlášený uživatel - zapínáme chytrý filtr
+            recenze = recenzeRepository.najdiViditelneRecenzePodniku(idPodniku, idPrihlasenehoUzivatele);
+        } else {
+            // Nepřihlášený - jen veřejné
+            recenze = recenzeRepository.najdiVerejneRecenzePodniku(idPodniku);
+        }
+
+        // Pokud zde potřebuješ dotahovat fotky (stejně jako u stránkování), přidej sem ten for-cyklus:
+        for (Recenze r : recenze) {
+            pripojIdTitulniFotky(r);
+        }
+
+        return recenze;
+    }
+
     private void pripojIdTitulniFotky(Recenze r) {
         List<Long> ids = fotkaRepository.najdiIdFotekPodleRecenze(r.getIdObsahu());
         if (!ids.isEmpty()) {
             r.setIdTitulniFotky(ids.get(0));
+        }
+    }
+
+    // PŘIDEJ TUTO NOVOU METODU DO RecenzeService
+    public Page<Recenze> ziskejMojeRecenze(Pageable pageable, Long idPrihlasenehoUzivatele) {
+
+        // Získáme z databáze POUZE recenze aktuálního uživatele
+        Page<Recenze> stranka = recenzeRepository.findByObsahUzivatelIdUzivateleOrderByIdObsahuDesc(idPrihlasenehoUzivatele, pageable);
+
+        // Kód pro bleskové načítání fotek z minula
+        for (Recenze r : stranka.getContent()) {
+            pripojIdTitulniFotky(r);
+        }
+
+        return stranka;
+    }
+
+    public void oznacJakoSmazanou(Long idRecenze) {
+        Recenze r = recenzeRepository.findById(idRecenze).orElse(null);
+        if (r != null) {
+
+            // 1. Vytvoříme si nový (pomocný) objekt Viditelnost
+            Viditelnost smazanaViditelnost = new Viditelnost();
+
+            // 2. Nastavíme mu ID 5 (Smazaný)
+            smazanaViditelnost.setIdViditelnosti(5L);;
+
+            // 3. TADY JE HLAVNÍ ZMĚNA: Recenzi nepředěláváme starou viditelnost,
+            // ale rovnou jí "nasadíme" tento náš nový objekt.
+            r.getObsah().setViditelnost(smazanaViditelnost);
+
+            // Uložíme do databáze
+            recenzeRepository.save(r);
         }
     }
 }

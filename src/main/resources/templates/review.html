@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 
     <link rel="stylesheet" href="/header.css">
     <link rel="stylesheet" href="/review.css">
     <link rel="stylesheet" href="/footer.css">
     <script src="/nav.js" defer></script>
+    <script src="/delete.js" defer></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -96,16 +99,28 @@
 
         <div class="top-row">
              <div class="icons">
-                <button class="settings">
-                    <span class="material-symbols-outlined">
-                        more_vert
-                    </span>
-                </button>
+                 <div th:if="${prihlasenyId != null and prihlasenyId == recenze.obsah.uzivatel.idUzivatele}" class="edit-menu-container">
+                     <button class="settings" onclick="toggleReviewMenu(this)">
+                         <span class="material-symbols-outlined">more_vert</span>
+                     </button>
+
+                     <div class="review-dropdown" style="display: none; position: absolute; right: 0; background: white; border: 1px solid #ddd; border-radius: 5px; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                         <button th:onclick="'deleteReview(' + ${recenze.idObsahu} + ')'"
+                                 style="color: red; padding: 10px 15px; background: none; border: none; cursor: pointer; width: 100%; text-align: left;">
+                             <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle;">delete</span>
+                             Smazat
+                         </button>
+                     </div>
+                 </div>
 
                 <div class="visibility">
-                    <span class="material-symbols-outlined">
-                        public
+
+                    <span class="material-symbols-outlined"
+                          th:text="${recenze.obsah.viditelnost.ikona}">
                     </span>
+
+                        <p th:text="${recenze.obsah.viditelnost.nazev}"></p>
+
                 </div>
             </div>
             <div class="heading-column">
