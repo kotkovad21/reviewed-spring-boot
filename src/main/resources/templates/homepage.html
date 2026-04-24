@@ -141,7 +141,7 @@
                                 <h3 th:text="${r.podnik?.nazev}">Bar Xyz</h3>
                                 <div class="author-row">
                                     <p>By:</p>
-                                    <h4 th:text="${r.obsah?.uzivatel?.prezdivka}">Joe Doe</h4>
+                                    <h4 th:text="${r.getJmenoProDivaka(prihlasenyId)}">Joe Doe</h4>
                                 </div>
                                 <div class="rating">
                                     <th:block th:each="i : ${#numbers.sequence(1, 5)}">

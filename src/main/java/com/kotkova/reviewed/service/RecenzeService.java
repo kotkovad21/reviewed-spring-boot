@@ -118,4 +118,23 @@ public class RecenzeService {
             recenzeRepository.save(r);
         }
     }
+
+    public Page<Recenze> ziskejFiltrovaneMojeRecenze(Pageable pageable, Long idUzivatele, String business, List<String> tags) {
+
+        // 1. Převod Stringu "all" nebo "1" na Long pro databázi
+        Long typId = (business == null || business.equals("all")) ? null : Long.parseLong(business);
+
+        // 2. Počet štítků (potřebujeme pro databázi, pokud hledáme shodu všech)
+        Long tagCount = (tags == null || tags.isEmpty()) ? null : (long) tags.size();
+
+        // 3. Zavolání našeho nového filtru z Repository
+        Page<Recenze> stranka = recenzeRepository.najdiMojeFiltrovaneRecenze(idUzivatele, typId, tags, tagCount, pageable);
+
+        // 4. Bleskové dotažení titulních fotek (tvá původní logika)
+        for (Recenze r : stranka.getContent()) {
+            pripojIdTitulniFotky(r);
+        }
+
+        return stranka;
+    }
 }

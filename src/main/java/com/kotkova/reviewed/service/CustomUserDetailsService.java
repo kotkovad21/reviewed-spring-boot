@@ -2,13 +2,11 @@ package com.kotkova.reviewed.service;
 
 import com.kotkova.reviewed.model.Uzivatel;
 import com.kotkova.reviewed.repository.UzivatelRepository;
-import org.springframework.security.core.userdetails.User;
+import com.kotkova.reviewed.model.CustomUserDetails; // Nezapomeň na import!
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -21,15 +19,11 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // 1. Najdeme uživatele v databázi podle e-mailu
+        // 1. Najdeme uživatele v databázi
         Uzivatel mujUzivatel = uzivatelRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Uživatel s emailem " + email + " nebyl nalezen."));
 
-        // 2. Přeložíme ho do formátu, kterému rozumí Spring Security
-        return User.builder()
-                .username(mujUzivatel.getEmail()) // Jako "jméno" použijeme e-mail
-                .password(mujUzivatel.getHeslo())
-                .roles("USER") // Zatím dáme všem roli USER, později můžeme napojit tvůj ID_ROLE
-                .build();
+        // 2. TADY JE ZMĚNA: Vrátíme naši novou obálku, do které uživatele vložíme
+        return new CustomUserDetails(mujUzivatel);
     }
 }

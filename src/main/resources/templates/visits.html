@@ -94,50 +94,45 @@
     </header>
 
     <main>
-        <section class="filters">
-            <button class="filters-button" type="button">
-                <span class="material-symbols-outlined">
-                    filter_list
-                </span>
-            </button>
-            
-            <select id="order" name="order" >
-                <option value="latest">By date (latest)</option>
-                <option value="oldest">By date (Oldest) </option>
-                <option value="rating">Highest rating</option>
-                <option value="abc">Alphabetically</option>
-            </select>
-            
-            <select id="business" name="business" >
-                <option value="all">All</option>
-                <option value="restaurant">Restaurants</option>
-                <option value="cofee">Cofee Shops</option>
-                <option value="bar">Bars</option>
-                <option value="other">Other</option>
-            </select>
-            
-            <div class="filter">
-                <p class="filter-name">
-                    Dog friendly
-                </p>
-                <button class="filter-remove" type="button">
-                    <span class="material-symbols-outlined">
-                        close
-                    </span>
-                </button>
-            </div>
+        <form id="filterForm" action="/visits" method="GET">
+            <section class="filters">
 
-            <div class="filter">
-                <p class="filter-name">
-                    Fast Service
-                </p>
-                <button class="filter-remove" type="button">
-                    <span class="material-symbols-outlined">
-                        close
-                    </span>
-                </button>
-            </div>
-        </section>
+                <div class="filter-menu-wrapper">
+                    <button class="filters-button" type="button" onclick="toggleTagMenu()">
+                        <span class="material-symbols-outlined">filter_list</span>
+                    </button>
+
+                    <div id="tagMenu" class="tag-dropdown">
+                        <div th:each="stitek : ${vsechnyStitky}"
+                             class="tag-option"
+                             th:data-tagname="${stitek.nazev}"
+                             onclick="addTag(this.getAttribute('data-tagname'))">
+                            <span th:text="'+ ' + ${stitek.nazev}">+ Štítek</span>
+                        </div>
+                    </div>
+                </div> <select name="order" onchange="this.form.submit()">
+                <option value="latest" th:selected="${param.order == null or param.order[0] == 'latest'}">By date (latest)</option>
+                <option value="rating" th:selected="${param.order != null and param.order[0] == 'rating'}">Highest rating</option>
+                <option value="abc" th:selected="${param.order != null and param.order[0] == 'abc'}">Alphabetically</option>
+            </select>
+
+                <select name="business" onchange="this.form.submit()">
+                    <option value="all">All types</option>
+                    <option th:each="typ : ${typyPodniku}"
+                            th:value="${typ.idTypuPodniku}"
+                            th:text="${typ.nazev}"
+                            th:selected="${param.business != null and param.business[0] == typ.idTypuPodniku.toString()}">Typ</option>
+                </select>
+
+                <div class="filter" th:each="activeTag : ${aktivniStitky}">
+                    <p class="filter-name" th:text="${activeTag}">Dog friendly</p>
+                    <input type="hidden" name="tags" th:value="${activeTag}">
+                    <button class="filter-remove" type="button" onclick="removeTag(this)">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+            </section>
+        </form>
 
         <section class="visits">
 

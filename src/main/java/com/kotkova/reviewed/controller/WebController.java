@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.stereotype.Controller;
@@ -63,6 +64,9 @@ public class WebController {
         // Pošleme do HTML jen těch bezpečných 6 kousků
         model.addAttribute("seznamRecenzi", stranka.getContent());
 
+        // NOVÉ: Pošleme ID do HTML, abychom poznali vlastní anonymní recenze
+        model.addAttribute("prihlasenyId", idPrihlaseneho);
+
         return "homepage";
     }
     @GetMapping("/place")
@@ -94,45 +98,60 @@ public class WebController {
         return "profile";
     }
     @GetMapping("/visits")
-    public String showVisitsPage(Model model, java.security.Principal principal) {
+    public String showVisitsPage(@RequestParam(required = false, defaultValue = "latest") String order,
+                                 @RequestParam(required = false, defaultValue = "all") String business,
+                                 @RequestParam(required = false) List<String> tags,
+                                 @AuthenticationPrincipal CustomUserDetails customUser,
+                                 Model model) {
 
-        Pageable pageable = PageRequest.of(0, 12);
+        Long idPrihlaseneho = (customUser != null) ? customUser.getIdUzivatele() : null;
 
-        Long idPrihlaseneho = null;
-        if (principal != null) {
-            Uzivatel u = uzivatelService.ziskejUzivatelePodleEmailu(principal.getName());
-            if (u != null) {
-                idPrihlaseneho = u.getIdUzivatele();
-            }
+        org.springframework.data.domain.Sort sort;
+        switch (order) {
+            case "oldest": sort = org.springframework.data.domain.Sort.by("idObsahu").ascending(); break;
+            case "rating": sort = org.springframework.data.domain.Sort.by("hodnoceni").descending(); break;
+            case "abc":    sort = org.springframework.data.domain.Sort.by("podnik.nazev").ascending(); break;
+            default:       sort = org.springframework.data.domain.Sort.by("idObsahu").descending(); break;
         }
 
-        var prvniStranka = recenzeService.ziskejMojeRecenze(pageable, idPrihlaseneho);
+        // OPRAVA 1: Přidali jsme 'sort' jako třetí parametr
+        Pageable pageable = PageRequest.of(0, 12, sort);
 
-        // 2. Pošleme je do HTML pod jménem "seznamRecenzi"
+        var prvniStranka = recenzeService.ziskejFiltrovaneMojeRecenze(pageable, idPrihlaseneho, business, tags);
+
+        // OPRAVA 2: Posíláme VŠECHNY potřebné věci do HTML
         model.addAttribute("seznamRecenzi", prvniStranka.getContent());
+        model.addAttribute("vsechnyStitky", stitekService.ziskejVsechnyStitky());
+        model.addAttribute("typyPodniku", typPodnikuService.ziskejVsechnyTypy()); // Pro select s podniky
+        model.addAttribute("aktivniStitky", tags != null ? tags : new java.util.ArrayList<>()); // Pro žetony s křížkem
 
         return "visits";
     }
 
     @GetMapping("/visits/load-more")
-    public String loadMore(@RequestParam(defaultValue = "0") int page, Model model, java.security.Principal principal) {
-        // 1. Připravíme si stránkování
-        Pageable pageable = PageRequest.of(page, 12);
+    public String loadMore(@RequestParam(defaultValue = "0") int page, Model model,
+                           @RequestParam(required = false, defaultValue = "latest") String order,
+                           @RequestParam(required = false, defaultValue = "all") String business,
+                           @RequestParam(required = false) List<String> tags,
+                           @AuthenticationPrincipal CustomUserDetails customUser) {
 
-        // 2. Zjistíme ID přihlášeného uživatele (úplně stejně jako v /visits)
-        Long idPrihlaseneho = null;
-        if (principal != null) {
-            Uzivatel u = uzivatelService.ziskejUzivatelePodleEmailu(principal.getName());
-            if (u != null) {
-                idPrihlaseneho = u.getIdUzivatele();
-            }
+        Long idPrihlaseneho = (customUser != null) ? customUser.getIdUzivatele() : null;
+
+        org.springframework.data.domain.Sort sort;
+        switch (order) {
+            case "oldest": sort = org.springframework.data.domain.Sort.by("idObsahu").ascending(); break;
+            case "rating": sort = org.springframework.data.domain.Sort.by("hodnoceni").descending(); break;
+            case "abc":    sort = org.springframework.data.domain.Sort.by("podnik.nazev").ascending(); break;
+            default:       sort = org.springframework.data.domain.Sort.by("idObsahu").descending(); break;
         }
 
-        // 3. ZAVOLÁME SLUŽBU SE DVĚMA PARAMETRY (tady byla ta chyba)
-        Page<Recenze> recenzePage = recenzeService.ziskejMojeRecenze(pageable, idPrihlaseneho);
+        // OPRAVA 3: I tady musíme přidat 'sort'
+        Pageable pageable = PageRequest.of(page, 12, sort);
 
-        // 4. Pošleme data do modelu a vrátíme fragment
+        Page<Recenze> recenzePage = recenzeService.ziskejFiltrovaneMojeRecenze(pageable, idPrihlaseneho, business, tags);
+
         model.addAttribute("seznamRecenzi", recenzePage.getContent());
+        model.addAttribute("prihlasenyId", idPrihlaseneho);
 
         return "fragments/visitsLoad :: visits-fragment";
     }

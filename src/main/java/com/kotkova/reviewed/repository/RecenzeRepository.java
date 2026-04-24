@@ -48,4 +48,22 @@ public interface RecenzeRepository extends JpaRepository<Recenze, Long> {
     // NOVÉ: Filtr pro KONKRÉTNÍ PODNIK (pro nepřihlášené)
     @Query("SELECT r FROM Recenze r WHERE r.podnik.idPodniku = :idPodniku AND r.obsah.viditelnost.idViditelnosti IN (1, 2) ORDER BY r.idObsahu DESC")
     List<Recenze> najdiVerejneRecenzePodniku(@Param("idPodniku") Long idPodniku);
+
+    @Query("SELECT r FROM Recenze r " +
+            "WHERE r.obsah.uzivatel.idUzivatele = :mojeId " +
+            "AND r.obsah.viditelnost.idViditelnosti != 5 " +
+            "AND (:typId IS NULL OR r.podnik.typPodniku.idTypuPodniku = :typId) " +
+            "AND (:tagCount IS NULL OR r.idObsahu IN (" +
+            "    SELECT r2.idObsahu FROM Recenze r2 " +
+            "    JOIN r2.podnik.stitky s2 " +
+            "    WHERE s2.nazev IN :tags " +
+            "    GROUP BY r2.idObsahu " +
+            "    HAVING COUNT(DISTINCT s2.idStitku) >= :tagCount" +
+            "))")
+    Page<Recenze> najdiMojeFiltrovaneRecenze(
+            @Param("mojeId") Long mojeId,
+            @Param("typId") Long typId,
+            @Param("tags") List<String> tags,
+            @Param("tagCount") Long tagCount,
+            Pageable pageable);
 }

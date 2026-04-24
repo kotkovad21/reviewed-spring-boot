@@ -68,4 +68,19 @@ public class Recenze {
 
     public Obsah getObsah() { return obsah; }
     public void setObsah(Obsah obsah) { this.obsah = obsah; }
+
+
+    // ... tvé stávající gettery a settery (např. getObsah)
+
+    public String getJmenoProDivaka(Long idPrihlaseneho) {
+        if (obsah.getViditelnost().getIdViditelnosti() == 1L) {
+            // Je to anonym - ukážeme jméno jen autorovi
+            if (obsah.getUzivatel().getIdUzivatele().equals(idPrihlaseneho)) {
+                return obsah.getUzivatel().getPrezdivka();
+            }
+            return "Anonym";
+        }
+        // Veřejné a ostatní recenze - klasické jméno
+        return obsah.getUzivatel().getPrezdivka();
+    }
 }

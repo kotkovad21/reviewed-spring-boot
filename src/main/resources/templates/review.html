@@ -162,7 +162,7 @@
 
             <div class="author-row">
                 <span class="label">By:</span>
-                <span class="author" th:text="${recenze.obsah?.uzivatel?.prezdivka}">Jane Doe</span>
+                <span class="author" th:text="${recenze.getJmenoProDivaka(prihlasenyId)}">Jane Doe</span>
             </div>
 
         </div>
